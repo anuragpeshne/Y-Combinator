@@ -1,0 +1,193 @@
+#+TITLE: Y Combinator
+* Recursive function definition using anonymous functions (λ)
+** Recursive function that calculates length of list
+#+begin_src scheme
+(define length
+  (lambda (l)
+    (cond
+      ((null? l) 0)
+      (else (length (cdr l))))))
+#+end_src
+** what if we dont have /(define...)/
+We won't be able to refer to /length/.
+** /length_{n}/
+*** length_{0}
+λ to calculate length of list equal to 0
+#+begin_src scheme
+(lambda (l)
+  (cond
+    ((null? l) 0)
+    (else (add1 (eternity (cdr l))))))
+#+end_src
+*** length_{1}
+#+begin_src scheme
+(lambda (l)
+  (cond
+    ((null? l) 0)
+    (else (add1 (lambda (l)
+                  (cond
+                    ((null? l) 0)
+                    (else (add1 (eternity (cdr l))))))
+                (cdr l)))))
+#+end_src
+*** length_{2}
+#+begin_src scheme
+(lambda (l)
+  (cond
+    ((null? l) 0)
+    (else (add1 (lambda (l)
+                  (cond
+                    ((null? l) 0)
+                    (else (add1 (lambda (l)
+                                  (cond
+                                    ((null? l) 0)
+                                    (else (add1 (eternity (cdr l))))))
+                                (cdr l)))))
+                (cdr l)))))
+#+end_src
+*Recursion*: Replacing function name with it's body
+** Using the /Nineth Commandment/
+#+begin_center
+*Nineth Commandment* \\
+Abstract common patterns with a new function
+#+end_center
+*** length_{=0}
+#+begin_src scheme
+((lambda (f)
+  (lambda (l)
+    (cond
+      ((null? l) 0)
+      (else (add1 (f (cdr l)))))))
+ eternity)
+#+end_src
+*** length_{\leq1}
+#+begin_src scheme
+((lambda (f)
+  (lambda (l)
+    (cond
+      ((null? l) 0)
+      (else (add1 (f (cdr l)))))))
+ (lambda (l)
+   (cond
+     ((null? l) 0)
+     (else (add1 (eternity (cdr l)))))))
+#+end_src
+*** length_{\leq2}
+#+begin_src scheme
+((lambda (f)
+  (lambda (l)
+    (cond
+      ((null? l) 0)
+      (else (add1 (f (cdr l)))))))
+ ((lambda (g)
+   (lambda (l)
+     (cond
+       ((null? l) 0)
+       (else (add1 (g (cdr l)))))))
+  (lambda (l)
+    (cond
+      ((null? l) 0)
+      (else (add1 (eternity (cdr l))))))))
+#+end_src
+** make-length
+Too much repetition- try to get rid of them.
+*** length_{=0}
+#+begin_src scheme
+((lambda (mk-length)
+  (mk-length eternity))
+ (lambda (length)
+   (lambda (l)
+     (cond
+       ((null? l) 0)
+       (else (add1 (length (cdr l))))))))
+#+end_src
+*** length_{\leq2}
+#+begin_src scheme
+((lambda (mk-length)
+  (mk-length
+    (mk-length
+      (mk-length eternity))))
+ (lambda (length)
+   (lambda (l)
+     (cond
+       ((null? l) 0)
+       (else (add1 (length (cdr l))))))))
+#+end_src
+*** length_{\infty}
+Make a new length when required.
+#+begin_src scheme
+((lambda (mk-length)
+  (mk-length mk-length))
+ (lambda (mk-length)
+   (lambda (l)
+     (cond
+       ((null? l) 0)
+       (else (add1 ((mk-length mk-length)
+                    (cdr l))))))))
+#+end_src
+** length
+Let's abstract out the /mk-length/ to make the function look like /length/.
+#+begin_src scheme
+((lambda (mk-length)
+  (mk-length mk-length))
+ (lambda (mk-length)
+   (lambda (length)
+     (lambda (l)
+       (cond
+         ((null? l) 0)
+         (else (add1 (length (cdr l)))))))
+   (mk-length mk-length)))
+#+end_src
+~mk-length~ no longer returns a function, instead it calls itself. Goes in \infty recursion.
+#+begin_src scheme
+((mk-length mk-length) x) ;; will be infinite loop
+(lambda (x)
+  ((mk-length mk-length) x)) ;;will defer execution of mk-length
+#+end_src
+#+begin_src scheme
+((lambda (mk-length)
+  (mk-length mk-length))
+ (lambda (mk-length)
+   (lambda (length)
+     (lambda (l)
+       (cond
+         ((null? l) 0)
+         (else (add1 (length (cdr l)))))))
+   (lambda (x)
+     ((mk-length mk-length) x))))
+#+end_src
+** Y Combinator
+~length~ doesn't depend on ~mk-length~. It can be taken out.
+#+begin_src scheme
+((lambda (f)
+   ((lambda (mk-length)
+      (mk-length mk-length))
+    (lambda (mk-length)
+      (f
+       (lambda (x)
+         ((mk-length mk-length) x))))))
+ (lambda (length)
+   (lambda (l)
+     (cond
+      ((null? l) 0)
+      (else (add1 (length (cdr l))))))))
+#+end_src
+Let's seperate the function that makes ~length~ from function which looks like ~length~
+#+begin_src scheme
+(lambda (le)
+   ((lambda (f)
+      (f f))
+    (lambda (f)
+      (le (lambda (x)
+         ((f f) x))))))
+#+end_src
+*** Applicative-order Y Combinator
+#+begin_src scheme
+(define Y
+  (lambda (le)
+    ((lambda (f)
+       (f f))
+     (lambda (f)
+       (le (lambda (x)
+             ((f f) x)))))))
+#+end_src
