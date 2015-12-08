@@ -1,0 +1,100 @@
+#+TITLE: Y Combinator
+* Recursive function definition using λ
+Is it possible to recursively call an anonymous function?
+** A Recursive function to calculate factorial
+#+BEGIN_SRC javascript
+function fact(n) {
+    if (n == 0)
+        return 1;
+    else
+        return n * fact(n - 1);
+}
+#+END_SRC
+#+BEGIN_VERSE
+Since we are not allowed to use named functions, we cannot have /function fact(.../
+#+END_VERSE
+#+BEGIN_VERSE
+Let's start with the simplest case which we can write using anonymous function (λ),
+we'll try to build upon it to re-write above factorial function using λ.
+#+END_VERSE
+** fact_{0}
+#+BEGIN_SRC javascript
+function (n) {
+    if (n == 0)
+        return 1;
+    else
+        return n * eternity(n-1);
+#+END_SRC
+where /eternity/ is function which loops eternally if called.
+#+BEGIN_SRC javascript
+function eternity(x)
+    return eternity(x);
+#+END_SRC
+#+BEGIN_VERSE
+Note that we are now using a λ; the function itself, however, is not much of use
+since it cannot compute factorial for number greater than 0.
+#+END_VERSE
+#+BEGIN_VERSE
+Now, let's try to write /fact_{1}/. Recall that
+#+END_VERSE
+#+BEGIN_CENTER
+1! = 1 \times 0!
+#+END_CENTER
+*** fact_{\leq1}
+#+BEGIN_VERSE
+Since we already have a function which can calculate /0!/, we can easily use that
+to compute factorial for any number /\leq1/
+#+END_VERSE
+#+BEGIN_SRC javascript
+function (n) {
+    if (n == 0)
+        return 1;
+    else
+        return n * (function (n) {
+                        if (n == 0)
+                            return 1;
+                        else
+                            return n * eternity(n-1)
+                    })(n - 1);
+}
+#+END_SRC
+#+BEGIN_VERSE
+We can similarly try to write /fact_{2}/ which can calculate factorial for numers /\leq2/
+#+END_VERSE
+*** fact_{\leq2}
+#+BEGIN_SRC javascript
+function (n) {
+    if (n == 0)
+        return 1;
+    else
+        return n * (function (n) {
+                        if (n == 0)
+                            return 1;
+                        else
+                            return n * (function (n) {
+                                            if (n == 0)
+                                                return 1;
+                                            else
+                                                return n * eternity(n-1)
+                                        })(n - 1);
+                    })(n - 1);
+}
+#+END_SRC
+** The Nineth Commandment
+Using the nineth commandment from the [[https://mitpress.mit.edu/books/little-schemer][Book]].
+#+begin_center
+*Nineth Commandment* \\
+Abstract common patterns with a new function
+#+end_center
+*** fact_{0}
+Let's abstract out the repetetive function out of the function and pass it as argument.
+#+BEGIN_SRC javascript
+(function (fact) {
+     return function (n) {
+                if (n == 0)
+                    return 1;
+                else
+                    return n * fact(n - 1);
+            };
+ })(eternity);
+#+END_SRC
