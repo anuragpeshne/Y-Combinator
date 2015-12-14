@@ -29,8 +29,9 @@ function (n) {
 #+END_SRC
 where /eternity/ is function which loops eternally if called.
 #+BEGIN_SRC javascript
-function eternity(x)
+function eternity(x) {
     return eternity(x);
+}
 #+END_SRC
 #+BEGIN_VERSE
 Note that we are now using a λ; the function itself, however, is not much of use
@@ -146,40 +147,47 @@ Let's abstract out the repetetive function out of the function and pass it as ar
 This didn't really helped us. Now /function (fact).../ is repeating.
 Let's try to remove the repetition and write a function which /makes/ fact.
 #+END_VERSE
-** make-fact
+** make_fact
 *** fact_{0}
 #+BEGIN_SRC javascript
-(function (mk-fact) {
-     return mk-fact(eternity);
+(function (mk_fact) {
+     return mk_fact(eternity);
  })(function (fact) {
-        if (n == 0)
-            return 1;
-        else
-            return n * fact(n - 1);
+        return function (n) {
+            if (n == 0)
+                return 1;
+            else
+                return n * fact(n - 1);
+        };
     });
 #+END_SRC
 *** fact_{\leq1}
 #+BEGIN_SRC javascript
-(function (mk-fact) {
-     return mk-fact(eternity);
+(function (mk_fact) {
+     return mk_fact(eternity);
  })(function (fact) {
-        if (n == 0)
-            return 1;
-        else
-            return n * fact(n - 1);
+        return function (n) {
+            if (n == 0)
+                return 1;
+            else
+                return n * fact(n - 1);
+        }
     });
 #+END_SRC
 *** fact_{\leq2}
 #+BEGIN_SRC javascript
-(function (mk-fact) {
-     return mk-fact(mk-fact(eternity));
+(function (mk_fact) {
+     return mk_fact(mk_fact(eternity));
  })(function (fact) {
-        if (n == 0)
-            return 1;
-        else
-            return n * fact(n - 1);
+        return function (n) {
+            if (n == 0)
+                return 1;
+            else
+                return n * fact(n - 1);
+        }
     });
 #+END_SRC
 #+BEGIN_VERSE
-This removes most of the repetition, still we have to apply /mk-fact/ again and again.
+This removes most of the repetition, still we have to apply /mk_fact/ again and again.
+Let's try to remove that.
 #+END_VERSE
