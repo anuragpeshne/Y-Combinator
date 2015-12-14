@@ -164,7 +164,7 @@ Let's try to remove the repetition and write a function which /makes/ fact.
 *** fact_{\leq1}
 #+BEGIN_SRC javascript
 (function (mk_fact) {
-     return mk_fact(eternity);
+     return mk_fact(mk_fact(eternity));
  })(function (fact) {
         return function (n) {
             if (n == 0)
@@ -177,7 +177,7 @@ Let's try to remove the repetition and write a function which /makes/ fact.
 *** fact_{\leq2}
 #+BEGIN_SRC javascript
 (function (mk_fact) {
-     return mk_fact(mk_fact(eternity));
+     return mk_fact(mk_fact(mk_fact(eternity)));
  })(function (fact) {
         return function (n) {
             if (n == 0)
