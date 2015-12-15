@@ -1,4 +1,5 @@
 #+TITLE: Y Combinator
+#+OPTIONS: ^:{}
 * Recursive function definition using λ
 #+BEGIN_VERSE
 Is it possible to recursively call an anonymous function?
@@ -191,3 +192,103 @@ Let's try to remove the repetition and write a function which /makes/ fact.
 This removes most of the repetition, still we have to apply /mk_fact/ again and again.
 Let's try to remove that.
 #+END_VERSE
+*** mk_fact_{\leq \infty}
+#+BEGIN_SRC javascript
+(function (mk_fact) {
+     return mk_fact(mk_fact);
+ })(function (mk_fact) {
+        return function (n) {
+            if (n == 0)
+                return 1;
+            else
+                return n * (mk_fact(mk_fact))(n - 1);
+        }
+    });
+#+END_SRC
+#+BEGIN_VERSE
+We now have a function which computes factorial for any /n/.
+However, our function /fact/ doesn't look like original /fact/. It now calls /make_fact/
+instead to /fact/. Let's try to fix that.
+#+END_VERSE
+** fact
+*** fact_{\leq \infty}: /attempt 1/
+#+BEGIN_SRC javascript
+(function (mk_fact) {
+     return mk_fact(mk_fact);
+ })(function (mk_fact) {
+        return (function (fact) {
+                    return function (n) {
+                               if (n == 0)
+                                   return 1;
+                               else
+                                   return n * fact(n - 1);
+                           };
+                })(mk_fact(mk_fact));
+    });
+#+END_SRC
+#+BEGIN_VERSE
+This change now restores our /fact/ function back to the original one, but it introduces another problem.
+Now we are not returning a function, instead we are returning function application, which calls itself again.
+=> /infinite loop/
+#+END_VERSE
+*** fact_{\leq \infty}: /attempt 2/
+Defer the application of function until called from inside of /fact/
+#+BEGIN_SRC javascript
+(function (mk_fact) {
+     return mk_fact(mk_fact);
+ })(function (mk_fact) {
+        return (function (fact) {
+                    return function (n) {
+                               if (n == 0)
+                                   return 1;
+                               else
+                                   return n * fact(n - 1);
+                           };
+                })(function (n) {
+                       return (mk_fact(mk_fact))(n);
+                   });
+    });
+#+END_SRC
+** Y Combinator
+Extracting the body of /factorial/ out:
+#+BEGIN_SRC javascript
+(function (fa) {
+    return (function (mk_fact) {
+                return mk_fact(mk_fact);
+            })(function (mk_fact) {
+                   return fa(function (n) {
+                                 return (mk_fact(mk_fact))(n);
+                             });
+               })
+ })(function (fact) {
+        return function (n) {
+                   if (n == 0)
+                       return 1;
+                   else
+                       return n * fact(n - 1);
+               };
+    });
+#+END_SRC
+And finally fitering out /fact/, since this was never about /fact/
+#+BEGIN_SRC javascript
+var Y = function (le) {
+    return (function (f) {
+                return f(f);
+            })(function (f) {
+                   return le(function (n) {
+                                 return (f(f))(n);
+                             });
+               })
+}
+#+END_SRC
+And thus, we can define recursive anonymous functions:
+#+BEGIN_SRC javascript
+fact = Y(function(fact) {
+             return function(n) {
+                        if (n == 0)
+                            return 1;
+                        else
+                            return n * fact(n - 1);
+                    }
+         })
+#+END_SRC
