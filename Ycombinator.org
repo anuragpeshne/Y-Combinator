@@ -6,7 +6,7 @@
   (lambda (l)
     (cond
       ((null? l) 0)
-      (else (length (cdr l))))))
+      (else (add1 (length (cdr l)))))))
 #+end_src
 ** what if we dont have /(define...)/
 We won't be able to refer to /length/.
